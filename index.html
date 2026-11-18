@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="맞벌이 부부 의료비·교육비 세액공제, 누가 받아야 유리할까? 총급여 3% 문턱, 700만원 한도, 산후조리원·난임·실손 차감, 자녀 교육비까지 모든 배치를 비교합니다. 2026년 귀속 기준.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="맞벌이 의료비·교육비 세액공제 계산기 (2026년 귀속)">
+<meta property="og:description" content="연봉 높은 쪽으로 몰면 손해일 수도? 부부 총급여와 의료비·자녀 교육비만 넣으면 누가 받아야 세금이 가장 줄어드는지 알려드려요">
+<meta property="og:url" content="https://gilkim72.github.io/medical-education-calculator/">
+<meta property="og:image" content="https://gilkim72.github.io/medical-education-calculator/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<title>맞벌이 의료비·교육비 계산기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: 탭 2개(맞벌이/의료비), 입력 왼쪽 결과 오른쪽, 폰에서는 한 줄로 쌓임 */
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --ink:#15212b; --muted:#5b6b78; --line:#d9e0e6;
+  --accent:#0b6e63; --accent-soft:#e1f1ee; --warn:#a24d00; --warn-soft:#fdf0e3; --bad:#b3261e; --bad-soft:#fbe9e7;
+  --font-head:"IBM Plex Sans KR","Noto Sans KR",system-ui,sans-serif;
+  --font-body:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --font-num:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f161c; --panel:#17212a; --ink:#e6edf2; --muted:#93a4b1; --line:#2a3743;
+  --accent:#4fc3b2; --accent-soft:#163a36; --warn:#f0a35e; --warn-soft:#3a2a18; --bad:#f2847b; --bad-soft:#3c1f1d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f161c; --panel:#17212a; --ink:#e6edf2; --muted:#93a4b1; --line:#2a3743;
+  --accent:#4fc3b2; --accent-soft:#163a36; --warn:#f0a35e; --warn-soft:#3a2a18; --bad:#f2847b; --bad-soft:#3c1f1d; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--font-head);text-wrap:balance;margin:0}
+h1{font-size:1.75rem;font-weight:700;letter-spacing:-.01em}
+h2{font-size:1.15rem;font-weight:600}
+h3{font-size:1rem;font-weight:600}
+.sub{color:var(--muted);margin:4px 0 0;max-width:65ch}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:0}
+.tab{font:inherit;font-weight:500;background:none;border:none;color:var(--muted);padding:10px 14px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+.tab:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:20px;align-items:start}
+@media (max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label,.lbl{font-size:.85rem;font-weight:500;color:var(--muted)}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.row2>*,.field{min-width:0}
+@media (max-width:420px){.row2{grid-template-columns:1fr}}
+.inp{display:flex;align-items:center;border:1px solid var(--line);border-radius:7px;background:var(--bg);overflow:hidden}
+.inp input,.inp select{flex:1;min-width:0;font:inherit;font-family:var(--font-num);border:none;background:transparent;color:var(--ink);padding:9px 10px}
+.inp select{font-family:var(--font-body)}
+.inp span{padding:0 10px;color:var(--muted);font-size:.85rem}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--panel);font-weight:600}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:.92rem}
+.check input{margin-top:5px;accent-color:var(--accent)}
+.hint{font-size:.82rem;color:var(--muted);margin:0}
+.big{font-family:var(--font-num);font-size:2rem;font-weight:500;color:var(--accent);line-height:1.2;font-variant-numeric:tabular-nums}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:.93rem}
+.kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;font-family:var(--font-num);font-variant-numeric:tabular-nums}
+.kv .sum{border-top:1px solid var(--line);padding-top:6px;font-weight:700;color:var(--ink)}
+.note{border-radius:8px;padding:10px 12px;font-size:.88rem;background:var(--accent-soft)}
+.note.warn{background:var(--warn-soft);color:var(--ink)} .note.warn b{color:var(--warn)}
+.note.bad{background:var(--bad-soft)} .note.bad b{color:var(--bad)}
+.pill{display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.02em;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:640px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{font-family:var(--font-head);font-weight:600;color:var(--muted);font-size:.8rem;background:var(--bg)}
+th:first-child,td:first-child{text-align:left}
+td{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+tr.hl td{background:var(--accent-soft)}
+.foot{font-size:.82rem;color:var(--muted);max-width:75ch;display:flex;flex-direction:column;gap:6px}
+.foot ul{margin:0;padding-left:18px}
+.bar{height:10px;border-radius:5px;background:var(--line);overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.bar .a{background:var(--accent)} .bar .b{background:var(--warn)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;background:var(--c)}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .25s}}
+details summary{cursor:pointer}
+.sp{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr);gap:8px 10px;align-items:center;font-size:.9rem}
+.sp .inp input{padding:7px 8px;text-align:right}
+
+.sp4{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) auto}
+.sp3{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr)}
+.seg.sm{flex-wrap:nowrap;gap:4px}.seg.sm button{padding:4px 10px;font-size:.85rem}
+.kid{border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.kid-h{display:flex;gap:10px;align-items:center}
+@media (max-width:420px){.sp4{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.sp4>.lbl:first-child{display:none}.sp4>span:not(.lbl):not(.hint){grid-column:1/-1;font-weight:600}.sp4>.lbl{display:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>맞벌이 의료비·교육비 세액공제 계산기</h1>
+    <p class="sub">2026년 귀속(2026년 1~12월 지출분, 2027년 1~2월 연말정산) 기준. 부부 의료비와 아이 의료비·교육비를 누구 쪽으로 받아야 부부 합산 세금이 가장 줄어드는지 모든 배치를 비교합니다. 금액은 만원 단위로 넣으세요.</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="couple" id="t-couple">① 맞벌이 누가 받을까</button>
+    <button class="tab" role="tab" data-tab="med" id="t-med">② 내 의료비 3% 문턱 계산</button>
+  </nav>
+
+  <!-- ① 맞벌이 -->
+  <section id="v-couple" data-view>
+    <div class="grid">
+      <div class="panel">
+        <h2>부부 정보</h2>
+        <div class="row2">
+          <div class="field"><label for="g-a">A 총급여</label><div class="inp"><input id="g-a" type="number" inputmode="decimal" min="0" value="7000"><span>만원</span></div></div>
+          <div class="field"><label for="g-b">B 총급여</label><div class="inp"><input id="g-b" type="number" inputmode="decimal" min="0" value="3500"><span>만원</span></div></div>
+          <div class="field"><label for="p-a">A 기본공제 인원 (본인 포함, 자녀 제외)</label><div class="inp"><input id="p-a" type="number" inputmode="numeric" min="1" value="1"><span>명</span></div></div>
+          <div class="field"><label for="p-b">B 기본공제 인원 (본인 포함, 자녀 제외)</label><div class="inp"><input id="p-b" type="number" inputmode="numeric" min="1" value="1"><span>명</span></div></div>
+        </div>
+        <p class="hint">총급여는 연봉에서 식대 등 비과세를 뺀 금액이에요(원천징수영수증 "총급여"). 부모님을 기본공제로 올렸다면 인원에 더하세요.</p>
+
+        <h3>부부 의료비 (실손보험으로 돌려받은 금액은 빼고)</h3>
+        <div class="sp sp4">
+          <span class="lbl"></span><span class="lbl">의료비</span><span class="lbl">실손 받은 돈</span><span class="lbl">지금 누가 받나</span>
+          <span>A 본인 의료비</span><div class="inp"><input id="ma" type="number" placeholder="의료비" inputmode="decimal" min="0" value="50" aria-label="A 본인 의료비"></div><div class="inp"><input id="ma-r" type="number" placeholder="실손" inputmode="decimal" min="0" value="0" aria-label="A 실손"></div><div class="seg sm" id="s-ma"><button data-v="a" aria-pressed="true">A</button><button data-v="b" aria-pressed="false">B</button></div>
+          <span>B 본인 의료비</span><div class="inp"><input id="mb" type="number" placeholder="의료비" inputmode="decimal" min="0" value="500" aria-label="B 본인 의료비"></div><div class="inp"><input id="mb-r" type="number" placeholder="실손" inputmode="decimal" min="0" value="100" aria-label="B 실손"></div><div class="seg sm" id="s-mb"><button data-v="a" aria-pressed="true">A</button><button data-v="b" aria-pressed="false">B</button></div>
+          <span>난임시술비 (30%)</span><div class="inp"><input id="mi" type="number" placeholder="의료비" inputmode="decimal" min="0" value="0" aria-label="난임시술비"></div><div class="inp"><input id="mi-r" type="number" placeholder="실손" inputmode="decimal" min="0" value="0" aria-label="난임 실손"></div><div class="seg sm" id="s-mi"><button data-v="a" aria-pressed="true">A</button><button data-v="b" aria-pressed="false">B</button></div>
+        </div>
+        <p class="hint">산후조리원은 출산 1회당 200만원까지 산모 본인 의료비에 넣으세요. 배우자 의료비는 실제로 결제한 사람이 받을 수 있다고 보고 계산해요. 내 의료비를 배우자가 받으면 배우자에게는 "부양가족 의료비(연 700만원 한도)"로 들어가요.</p>
+
+        <h3>자녀</h3>
+        <div class="field"><label for="kids">자녀 수</label>
+          <div class="inp"><select id="kids"><option value="0">없음</option><option value="1" selected>1명</option><option value="2">2명</option><option value="3">3명</option></select></div></div>
+        <div id="kid-rows" style="display:flex;flex-direction:column;gap:12px"></div>
+        <p class="hint">자녀의 의료비·교육비는 그 자녀를 기본공제로 올린 사람만 받을 수 있어서, 자녀를 옮기면 인적공제 150만원·자녀세액공제·의료비·교육비가 한꺼번에 같이 움직여요. 교육비 칸에는 공제되는 금액만 넣으세요(초3 이상 보습학원비는 안 돼요).</p>
+
+        <details>
+          <summary class="lbl">다른 공제가 있다면 (선택, 결과가 더 정확해져요)</summary>
+          <div class="sp sp3" style="margin-top:10px">
+            <span class="lbl"></span><span class="lbl">A</span><span class="lbl">B</span>
+            <span>A·B 본인 교육비 (대학원 등)</span><div class="inp"><input id="ea" type="number" inputmode="decimal" min="0" value="0" aria-label="A 본인 교육비"></div><div class="inp"><input id="eb" type="number" inputmode="decimal" min="0" value="0" aria-label="B 본인 교육비"></div>
+            <span>그 밖의 소득공제 (카드·주택청약 등)</span><div class="inp"><input id="xd-a" type="number" inputmode="decimal" min="0" value="0" aria-label="A 그 밖의 소득공제"></div><div class="inp"><input id="xd-b" type="number" inputmode="decimal" min="0" value="0" aria-label="B 그 밖의 소득공제"></div>
+            <span>보험료 세액공제 (세액)</span><div class="inp"><input id="xs-a" type="number" inputmode="decimal" min="0" value="12" aria-label="A 보험료 세액공제"></div><div class="inp"><input id="xs-b" type="number" inputmode="decimal" min="0" value="12" aria-label="B 보험료 세액공제"></div>
+            <span>그 밖의 세액공제 (연금저축 등, 세액)</span><div class="inp"><input id="xc-a" type="number" inputmode="decimal" min="0" value="0" aria-label="A 그 밖의 세액공제"></div><div class="inp"><input id="xc-b" type="number" inputmode="decimal" min="0" value="0" aria-label="B 그 밖의 세액공제"></div>
+          </div>
+          <p class="hint">보험료 세액공제 = 보장성보험료(연 100만원 한도) × 12%. 보험료·의료비·교육비 같은 특별세액공제를 하나라도 받으면 표준세액공제 13만원은 못 받아요.</p>
+        </details>
+      </div>
+
+      <div class="panel" aria-live="polite">
+        <span class="lbl">가장 유리한 배치로 바꾸면 부부 세금이</span>
+        <div class="big" id="r-gain">-</div>
+        <p class="hint" id="r-gain-sub"></p>
+        <div class="note" id="r-best"></div>
+        <div class="tablewrap">
+          <table style="min-width:520px">
+            <thead><tr><th>배치</th><th>부부 결정세액</th><th>A 결정세액</th><th>B 결정세액</th><th>지금 대비</th></tr></thead>
+            <tbody id="r-rows"></tbody>
+          </table>
+        </div>
+        <dl class="kv" id="r-kv"></dl>
+        <div id="r-notes" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ② 의료비 -->
+  <section id="v-med" data-view hidden>
+    <div class="grid">
+      <div class="panel">
+        <h2>내 의료비</h2>
+        <div class="row2">
+          <div class="field"><label for="d-g">내 총급여</label><div class="inp"><input id="d-g" type="number" inputmode="decimal" min="0" value="4000"><span>만원</span></div></div>
+          <div class="field"><label for="d-p">기본공제 인원 (본인·자녀 포함)</label><div class="inp"><input id="d-p" type="number" inputmode="numeric" min="1" value="2"><span>명</span></div></div>
+        </div>
+        <h3>1년 의료비 (실손으로 받은 금액은 빼고)</h3>
+        <div class="field"><label for="d-spec">본인·65세 이상·장애인·6세 이하·중증(산정특례) 의료비 <span class="pill">한도 없음</span></label>
+          <div class="inp"><input id="d-spec" type="number" inputmode="decimal" min="0" value="80"><span>만원</span></div></div>
+        <div class="field"><label for="d-gen">그 밖의 가족 의료비 (배우자·7세 이상 자녀·65세 미만 부모) <span class="pill warn">연 700만원 한도</span></label>
+          <div class="inp"><input id="d-gen" type="number" inputmode="decimal" min="0" value="100"><span>만원</span></div></div>
+        <div class="row2">
+          <div class="field"><label for="d-pre">미숙아·선천성이상아 <span class="pill">20%</span></label><div class="inp"><input id="d-pre" type="number" inputmode="decimal" min="0" value="0"><span>만원</span></div></div>
+          <div class="field"><label for="d-ivf">난임시술비 <span class="pill">30%</span></label><div class="inp"><input id="d-ivf" type="number" inputmode="decimal" min="0" value="0"><span>만원</span></div></div>
+        </div>
+        <details>
+          <summary class="lbl">다른 공제가 있다면 (선택)</summary>
+          <div class="row2" style="margin-top:10px">
+            <div class="field"><label for="d-kids">자녀세액공제 대상 자녀 (8세 이상)</label><div class="inp"><input id="d-kids" type="number" inputmode="numeric" min="0" value="0"><span>명</span></div></div>
+            <div class="field"><label for="d-xd">그 밖의 소득공제</label><div class="inp"><input id="d-xd" type="number" inputmode="decimal" min="0" value="0"><span>만원</span></div></div>
+            <div class="field"><label for="d-xs">교육비·보험료 세액공제 (세액)</label><div class="inp"><input id="d-xs" type="number" inputmode="decimal" min="0" value="0"><span>만원</span></div></div>
+            <div class="field"><label for="d-xc">그 밖의 세액공제 (세액)</label><div class="inp"><input id="d-xc" type="number" inputmode="decimal" min="0" value="0"><span>만원</span></div></div>
+          </div>
+        </details>
+        <p class="hint">안경·콘택트렌즈는 1명당 연 50만원, 산후조리원은 출산 1회당 200만원까지만 넣으세요. 미용·성형, 건강기능식품, 간병비, 해외 병원비는 빠져요.</p>
+      </div>
+      <div class="panel" aria-live="polite">
+        <span class="lbl">의료비 세액공제 (계산상)</span>
+        <div class="big" id="d-cr">-</div>
+        <div><span class="lbl">실제로 줄어드는 세금 (지방소득세 포함, 추정)</span>
+          <div class="big" style="font-size:1.5rem" id="d-save">-</div></div>
+        <dl class="kv" id="d-kv"></dl>
+        <div id="d-notes" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p><b>계산 기준</b> (소득세법 제59조의4 제2항·제3항, 2026년 귀속)</p>
+    <ul>
+      <li>의료비: 총급여의 3%를 넘는 금액의 15% (미숙아·선천성이상아 20%, 난임시술비 30%). 3% 문턱은 부양가족 의료비 → 본인 등 의료비 → 미숙아 → 난임 순서로 뺍니다. 부양가족 의료비는 연 700만원 한도.</li>
+      <li>배우자 의료비는 소득과 상관없이 실제로 지출한 배우자가 공제받을 수 있다는 국세청 해석을 따랐어요. 자녀 의료비·교육비는 그 자녀를 기본공제로 올린 사람만 받는 것으로 계산합니다.</li>
+      <li>교육비: 15%. 미취학·초중고 1명당 연 300만원, 대학생 900만원, 본인 한도 없음. 2026년 지출분부터 초등 1·2학년 예체능 학원비 포함, 대학생 자녀 소득요건 폐지(2025년 12월 국회 통과 보도 기준).</li>
+      <li>자녀세액공제(8세 이상): 1명 25만원, 2명 55만원, 3명부터 1명당 40만원 추가. 출산·입양 공제, 카드 한도 가산은 반영하지 않았어요.</li>
+      <li>특별세액공제(보험료·의료비·교육비)가 표준세액공제 13만원보다 작으면 13만원으로 계산합니다. 세액공제가 산출세액보다 크면 넘는 부분은 사라지고 다음 해로 넘어가지 않아요.</li>
+      <li>결정세액은 국민연금·건강보험료를 총급여 비율로 가정한 추정치예요. 지방소득세(10%)는 줄어드는 세금에만 더했습니다.</li>
+    </ul>
+    <p>계산 결과는 참고용 추정치입니다. 정확한 금액은 국세청 홈택스 연말정산 미리보기에서 확인하세요.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+const M=10000;
+const $=id=>document.getElementById(id);
+const num=id=>{const el=$(id);if(!el)return 0;const v=parseFloat(el.value);return isFinite(v)&&v>0?v:0;};
+const won=x=>Math.round(x).toLocaleString('ko-KR')+'원';
+const man=x=>{const m=x/M;return (Math.round(m*10)/10).toLocaleString('ko-KR')+'만원';};
+
+/* ---------- 세금 기본 함수 (원 단위) ---------- */
+function progTax(base){
+  const B=[[14e6,.06,0],[50e6,.15,1.26e6],[88e6,.24,5.76e6],[150e6,.35,15.44e6],[300e6,.38,19.94e6],[500e6,.40,25.94e6],[1e9,.42,35.94e6],[Infinity,.45,65.94e6]];
+  if(base<=0) return 0;
+  for(const [lim,r,d] of B){ if(base<=lim) return base*r-d; }
+}
+function wageDeduction(g){
+  let e;
+  if(g<=5e6) e=g*.7; else if(g<=15e6) e=3.5e6+(g-5e6)*.4; else if(g<=45e6) e=7.5e6+(g-15e6)*.15;
+  else if(g<=1e8) e=12e6+(g-45e6)*.05; else e=14.75e6+(g-1e8)*.02;
+  return Math.min(e,20e6);
+}
+function wageTaxCredit(calc,g){
+  let c = calc<=1.3e6 ? calc*.55 : 715000+(calc-1.3e6)*.30;
+  let lim;
+  if(g<=33e6) lim=740000;
+  else if(g<=70e6) lim=Math.max(740000-(g-33e6)*.008,660000);
+  else if(g<=120e6) lim=Math.max(660000-(g-70e6)*.5,500000);
+  else lim=Math.max(500000-(g-120e6)*.5,200000);
+  return Math.min(c,lim);
+}
+function childCredit(k){ if(k<=0) return 0; if(k===1) return 250000; return 550000+(k-2)*400000; }
+
+/* 의료비 세액공제: gen 부양가족(700 한도), spec 본인 등(한도 없음), pre 미숙아(20%), ivf 난임(30%) */
+function medCredit(g,{gen=0,spec=0,pre=0,ivf=0}){
+  const th=g*.03; let c=th;
+  const genOver=Math.max(0,gen-c); c=Math.max(0,c-gen);
+  const genAllowed=Math.min(genOver,7e6);
+  const specOver=Math.max(0,spec-c); c=Math.max(0,c-spec);
+  const preOver=Math.max(0,pre-c); c=Math.max(0,c-pre);
+  const ivfOver=Math.max(0,ivf-c); c=Math.max(0,c-ivf);
+  const total=gen+spec+pre+ivf;
+  return {th,total,gap:Math.max(0,th-total),genOver,genAllowed,genLost:genOver-genAllowed,specOver,preOver,ivfOver,
+    credit:(genAllowed+specOver)*.15+preOver*.20+ivfOver*.30};
+}
+/* 결정세액(국세) 추정 */
+function taxOf({g,people=1,kids=0,kids8=0,xded=0,med=null,edu=0,xspec=0,xcred=0}){
+  if(g<=0) return {tax:0,calc:0,special:0,std:false,medC:0,eduC:0,lost:0};
+  const np=Math.min(g,6.37e6*12)*.0475, ins=g*.0497;
+  const base=Math.max(0,g-wageDeduction(g)-(Math.max(1,people)+kids)*1.5e6-np-ins-xded);
+  const calc=progTax(base);
+  const medC=med?medCredit(g,med).credit:0, eduC=edu*.15;
+  const special=medC+eduC+xspec;
+  const std=special<130000;
+  const credits=wageTaxCredit(calc,g)+childCredit(kids8)+xcred+(std?130000:special);
+  const tax=Math.max(0,calc-credits);
+  return {tax,calc,special,std,medC,eduC,lost:Math.max(0,credits-calc)};
+}
+window.__calc={medCredit,taxOf};
+
+function seg(id,cb){const el=$(id);if(!el)return;el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));cb(b.dataset.v);});}
+const segVal=id=>{const b=$(id)&&$(id).querySelector('button[aria-pressed="true"]');return b?b.dataset.v:'a';};
+
+/* ---------- ① 맞벌이 ---------- */
+const STAGES=[['pre','미취학 (1월 1일 기준 6세 이하)'],['e1','초등 1학년'],['e2','초등 2학년'],['e3','초등 3학년~고3'],['uni','대학생']];
+const KID_DEF=[{st:'pre',m:40,r:0,e:0},{st:'e2',m:60,r:20,e:150},{st:'e3',m:40,r:0,e:50}];
+function buildKids(){
+  const n=+$('kids').value; const box=$('kid-rows'); const old={};
+  for(let i=0;i<3;i++){ if($(`k${i}-st`)) old[i]={st:$(`k${i}-st`).value,m:$(`k${i}-m`).value,r:$(`k${i}-r`).value,e:$(`k${i}-e`).value,to:segVal(`s-k${i}`)}; }
+  let h='';
+  for(let i=0;i<n;i++){
+    const d=old[i]||{...KID_DEF[i],to:'a'};
+    h+=`<div class="kid"><div class="kid-h"><b>자녀 ${i+1}</b><div class="inp" style="flex:1"><select id="k${i}-st" aria-label="자녀 ${i+1} 단계">${STAGES.map(([v,l])=>`<option value="${v}"${v===d.st?' selected':''}>${l}</option>`).join('')}</select></div></div>
+      <div class="sp sp4"><span class="lbl"></span><span class="lbl">의료비</span><span class="lbl">실손 받은 돈</span><span class="lbl">지금 누가 받나</span>
+      <span>의료비</span><div class="inp"><input id="k${i}-m" type="number" placeholder="의료비" inputmode="decimal" min="0" value="${d.m}" aria-label="자녀 ${i+1} 의료비"></div><div class="inp"><input id="k${i}-r" type="number" placeholder="실손" inputmode="decimal" min="0" value="${d.r}" aria-label="자녀 ${i+1} 실손"></div>
+      <div class="seg sm" id="s-k${i}"><button data-v="a" aria-pressed="${d.to==='a'}">A</button><button data-v="b" aria-pressed="${d.to==='b'}">B</button></div>
+      <span>교육비</span><div class="inp"><input id="k${i}-e" type="number" placeholder="교육비" inputmode="decimal" min="0" value="${d.e}" aria-label="자녀 ${i+1} 교육비"></div><span class="hint" id="k${i}-eh"></span><span></span></div></div>`;
+  }
+  box.innerHTML=h;
+  for(let i=0;i<n;i++){
+    seg(`s-k${i}`,renderCouple);
+    [`k${i}-st`,`k${i}-m`,`k${i}-r`,`k${i}-e`].forEach(id=>$(id).addEventListener('input',renderCouple));
+  }
+  renderCouple();
+}
+const eduCap=st=>st==='uni'?9e6:3e6;
+const eduHint={pre:'어린이집·유치원·학원·체육시설 (1인 300만원)',e1:'학교 교육비 + 예체능 학원 (300만원)',e2:'학교 교육비 + 예체능 학원 (300만원)',e3:'교복 50·체험학습 30·급식·방과후 등 (300만원, 학원 X)',uni:'등록금 (장학금 빼고, 900만원)'};
+
+function readCouple(){
+  const A={g:num('g-a')*M,people:Math.max(1,num('p-a')),xded:num('xd-a')*M,xspec:num('xs-a')*M,xcred:num('xc-a')*M,eduSelf:num('ea')*M};
+  const B={g:num('g-b')*M,people:Math.max(1,num('p-b')),xded:num('xd-b')*M,xspec:num('xs-b')*M,xcred:num('xc-b')*M,eduSelf:num('eb')*M};
+  const net=(a,r)=>Math.max(0,num(a)-num(r))*M;
+  const items=[
+    {key:'ma',label:'A 본인 의료비',owner:'a',amt:net('ma','ma-r'),cur:segVal('s-ma'),kind:'spouse'},
+    {key:'mb',label:'B 본인 의료비',owner:'b',amt:net('mb','mb-r'),cur:segVal('s-mb'),kind:'spouse'},
+    {key:'mi',label:'난임시술비',owner:null,amt:net('mi','mi-r'),cur:segVal('s-mi'),kind:'ivf'}
+  ];
+  const n=+$('kids').value;
+  for(let i=0;i<n;i++){
+    const st=$(`k${i}-st`).value;
+    items.push({key:'k'+i,label:`자녀 ${i+1}`,kind:'kid',st,amt:net(`k${i}-m`,`k${i}-r`),edu:Math.min(num(`k${i}-e`)*M,eduCap(st)),cur:segVal(`s-k${i}`)});
+  }
+  return {A,B,items};
+}
+function evalAssign(A,B,items,asg){
+  const P={a:{...A,kids:0,kids8:0,med:{gen:0,spec:0,pre:0,ivf:0},edu:A.eduSelf},b:{...B,kids:0,kids8:0,med:{gen:0,spec:0,pre:0,ivf:0},edu:B.eduSelf}};
+  items.forEach((it,i)=>{
+    const who=asg[i], p=P[who];
+    if(it.kind==='spouse'){ if(it.owner===who) p.med.spec+=it.amt; else p.med.gen+=it.amt; }
+    else if(it.kind==='ivf'){ p.med.ivf+=it.amt; }
+    else { p.kids+=1; if(it.st!=='pre'&&it.st!=='e1') p.kids8+=1; if(it.st==='pre') p.med.spec+=it.amt; else p.med.gen+=it.amt; p.edu+=it.edu; }
+  });
+  const ra=taxOf(P.a), rb=taxOf(P.b);
+  return {ra,rb,P,total:ra.tax+rb.tax};
+}
+function describe(items,asg){
+  const toA=[],toB=[];
+  items.forEach((it,i)=>{ if(it.kind!=='kid'&&it.amt<=0) return; (asg[i]==='a'?toA:toB).push(it.label.replace(' 본인 의료비',' 의료비')); });
+  const parts=[]; if(toA.length) parts.push('A: '+toA.join(', ')); if(toB.length) parts.push('B: '+toB.join(', '));
+  return parts.join(' / ')||'의료비·교육비 없음';
+}
+function renderCouple(){
+  const n=+$('kids').value;
+  for(let i=0;i<n;i++){ const h=$(`k${i}-eh`); if(h) h.textContent=eduHint[$(`k${i}-st`).value]; }
+  const {A,B,items}=readCouple();
+  const cur=items.map(it=>it.cur);
+  const curR=evalAssign(A,B,items,cur);
+  const all=[]; const N=items.length;
+  for(let m=0;m<(1<<N);m++){
+    const asg=items.map((_,i)=>(m>>i)&1?'b':'a');
+    // 금액 없는 항목은 지금 배치 그대로
+    if(items.some((it,i)=>it.kind!=='kid'&&it.amt<=0&&asg[i]!==it.cur)) continue;
+    all.push({asg,...evalAssign(A,B,items,asg)});
+  }
+  all.sort((x,y)=>x.total-y.total);
+  const best=all[0];
+  const allA=evalAssign(A,B,items,items.map(it=>it.kind!=='kid'&&it.amt<=0?it.cur:'a'));
+  const allB=evalAssign(A,B,items,items.map(it=>it.kind!=='kid'&&it.amt<=0?it.cur:'b'));
+  const gain=(curR.total-best.total)*1.1;
+  $('r-gain').textContent= gain>=1? won(gain)+' 더 줄어요' : '지금이 가장 유리해요';
+  $('r-gain-sub').textContent=`지방소득세 포함. 지금 배치 부부 결정세액 ${won(curR.total)} → 가장 유리한 배치 ${won(best.total)}`;
+  $('r-best').innerHTML=`<b>가장 유리한 배치</b><br>${describe(items,best.asg)}`;
+  const rows=[['지금 배치',curR],['전부 A 쪽으로',allA],['전부 B 쪽으로',allB]];
+  if(Math.abs(best.total-curR.total)>=1&&Math.abs(best.total-allA.total)>=1&&Math.abs(best.total-allB.total)>=1) rows.push(['가장 유리한 배치',best]);
+  const mn=Math.min(...rows.map(r=>r[1].total));
+  $('r-rows').innerHTML=rows.map(([l,e])=>`<tr${Math.abs(e.total-mn)<1?' class="hl"':''}><td style="font-family:var(--font-body)">${l}</td><td><b>${won(e.total)}</b></td><td>${won(e.ra.tax)}</td><td>${won(e.rb.tax)}</td><td>${e.total<curR.total-1?'−'+won((curR.total-e.total)*1.1):e.total>curR.total+1?'+'+won((e.total-curR.total)*1.1):'-'}</td></tr>`).join('');
+  const ba=best.P.a, bb=best.P.b;
+  const ma=medCredit(A.g,ba.med), mb=medCredit(B.g,bb.med);
+  const kv=[
+    ['의료비 3% 문턱 A / B',`${man(A.g*.03)} / ${man(B.g*.03)}`],
+    ['가장 유리한 배치: A 의료비 공제',man(ma.credit)],
+    ['가장 유리한 배치: B 의료비 공제',man(mb.credit)],
+    ['가장 유리한 배치: A / B 교육비 공제',`${man(ba.edu*.15)} / ${man(bb.edu*.15)}`]
+  ];
+  $('r-kv').innerHTML=kv.map(x=>`<dt>${x[0]}</dt><dd>${x[1]}</dd>`).join('');
+  const notes=[];
+  [['A',best.ra,ma,A],['B',best.rb,mb,B]].forEach(([w,r,m,P])=>{
+    if(r.lost>1) notes.push(`<div class="note bad"><b>${w}는 공제가 세금보다 커서 ${won(r.lost)}이 사라져요.</b> 결정세액이 0원이 되면 남는 공제는 다음 해로 넘어가지 않아요.</div>`);
+    if(m.gap>0&&m.total>0) notes.push(`<div class="note warn"><b>${w} 쪽 의료비가 3% 문턱(${man(m.th)})에 ${man(m.gap)} 모자라요.</b> 이 의료비는 공제가 0원이에요.</div>`);
+    if(r.std&&r.special>0) notes.push(`<div class="note warn"><b>${w}는 특별세액공제(${won(r.special)})보다 표준세액공제 13만원이 더 커서 13만원으로 계산했어요.</b></div>`);
+    if(m.genLost>0) notes.push(`<div class="note bad"><b>${w}의 부양가족 의료비가 700만원 한도를 넘어 ${man(m.genLost)}은 공제받지 못해요.</b></div>`);
+  });
+  if(items.some(it=>it.kind==='kid')) notes.push(`<div class="note">자녀를 옮기면 인적공제 150만원과 자녀세액공제(8세 이상), 신용카드 한도 가산(자녀 1명 50만원)도 같이 옮겨가요. 카드 한도 가산은 이 계산에 넣지 않았어요.</div>`);
+  notes.push(`<div class="note">배우자 의료비를 다른 배우자가 받으려면 <b>그 배우자 카드나 계좌로 결제</b>해야 해요. 간소화 자료는 환자 기준으로 나오니, 회사에 낼 때 지출한 사람 기준으로 정리하세요.</div>`);
+  $('r-notes').innerHTML=notes.join('');
+}
+['g-a','g-b','p-a','p-b','ma','ma-r','mb','mb-r','mi','mi-r','ea','eb','xd-a','xd-b','xs-a','xs-b','xc-a','xc-b'].forEach(id=>$(id).addEventListener('input',renderCouple));
+['s-ma','s-mb','s-mi'].forEach(id=>seg(id,renderCouple));
+$('kids').addEventListener('input',buildKids);
+
+/* ---------- ② 의료비 ---------- */
+function renderMed(){
+  const g=num('d-g')*M;
+  const med={gen:num('d-gen')*M,spec:num('d-spec')*M,pre:num('d-pre')*M,ivf:num('d-ivf')*M};
+  const m=medCredit(g,med);
+  const base={g,people:Math.max(1,num('d-p')),kids:0,kids8:Math.round(num('d-kids')),xded:num('d-xd')*M,xspec:num('d-xs')*M,xcred:num('d-xc')*M};
+  const t0=taxOf({...base,med:null}), t1=taxOf({...base,med});
+  const save=(t0.tax-t1.tax)*1.1;
+  $('d-cr').textContent=won(m.credit);
+  $('d-save').textContent=won(save);
+  const kv=[['총 의료비',man(m.total)],['3% 문턱 (총급여 × 3%)',man(m.th)],['부양가족 의료비 중 인정',man(m.genAllowed)],['본인 등 의료비 중 인정',man(m.specOver)],['미숙아·선천성 중 인정',man(m.preOver)],['난임시술비 중 인정',man(m.ivfOver)],['의료비 세액공제',won(m.credit)]];
+  $('d-kv').innerHTML=kv.map((x,i)=>`<dt${i===kv.length-1?' class="sum"':''}>${x[0]}</dt><dd${i===kv.length-1?' class="sum"':''}>${x[1]}</dd>`).join('');
+  const n=[];
+  if(m.gap>0) n.push(`<div class="note warn"><b>3% 문턱까지 ${man(m.gap)} 남았어요.</b> 문턱 아래 의료비는 공제가 0원이에요. 맞벌이라면 총급여가 낮은 배우자 쪽 문턱이 더 낮아요.</div>`);
+  if(m.genLost>0) n.push(`<div class="note bad"><b>부양가족 의료비가 700만원 한도를 넘어 ${man(m.genLost)}은 공제받지 못해요.</b></div>`);
+  if(m.credit>0&&save<m.credit*1.1-1){
+    if(t1.std) n.push(`<div class="note warn"><b>의료비 공제가 표준세액공제 13만원보다 작아서 실익이 없어요.</b> 보험료·교육비 공제가 없다면 13만원이 자동 적용돼요.</div>`);
+    else if(t0.tax<=0) n.push(`<div class="note bad"><b>원래 낼 세금(결정세액)이 0원으로 추정돼요.</b> 의료비 공제를 받아도 돌려받을 세금이 없어요.</div>`);
+    else n.push(`<div class="note warn"><b>공제액 일부는 효과가 없어요.</b> 표준세액공제 13만원을 포기하거나 결정세액이 바닥나서, 실제 줄어드는 세금이 공제액보다 작아요.</div>`);
+  }
+  if(med.ivf>0) n.push(`<div class="note">난임시술비는 회사에 낼 때 일반 의료비와 따로 적어야 30%가 적용돼요.</div>`);
+  $('d-notes').innerHTML=n.join('');
+}
+['d-g','d-p','d-spec','d-gen','d-pre','d-ivf','d-kids','d-xd','d-xs','d-xc'].forEach(id=>$(id).addEventListener('input',renderMed));
+
+/* ---------- 탭 ---------- */
+const views=['couple','med'];
+function show(v){if(!views.includes(v))v='couple';
+  views.forEach(x=>{$('v-'+x).hidden=x!==v;$('t-'+x).setAttribute('aria-selected',x===v?'true':'false');});}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{const v=b.dataset.tab;try{history.replaceState(null,'','#'+v);}catch(e){location.hash=v;}show(v);}));
+window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
+show(location.hash.slice(1));
+buildKids(); renderMed();
+})();
+</script>
+</body>
+</html>
